@@ -1,6 +1,6 @@
 import hashlib as hashes
 import re
-from time import sleep
+import timeit
 from time import process_time_ns
 import matplotlib.pyplot as plt
 
@@ -25,36 +25,36 @@ def test(files, n):
             # SHA2-384
             m = hashes.sha384()
             m.update(vectors[j]) # Vector j
-            ti = process_time_ns() # inicio
+            ti = timeit.default_timer()#ti = process_time_ns() # inicio
             m.digest()
-            tf = process_time_ns() # fin
+            tf = timeit.default_timer()#tf = process_time_ns() # fin
             elapsed_time = tf - ti # tiempo de ejecucion
             min_sha384[j] = min(min_sha384[j],elapsed_time)
             
             # SHA2-512
             m = hashes.sha512()
             m.update(vectors[j]) # Vector j
-            ti = process_time_ns() # inicio 
+            ti = timeit.default_timer()#ti = process_time_ns() # inicio 
             m.digest()
-            tf = process_time_ns()  # fin
+            tf = timeit.default_timer()#tf = process_time_ns()  # fin
             elapsed_time = tf - ti # tiempo de ejecucion)
             min_sha512[j] = min(min_sha512[j],elapsed_time)
             
             # SHA3-384
             m = hashes.sha3_384()
             m.update(vectors[j]) # Vector j
-            ti = process_time_ns() # inicio
+            ti = timeit.default_timer()#ti = process_time_ns() # inicio
             m.digest()
-            tf = process_time_ns() # fin
+            tf = timeit.default_timer()#tf = process_time_ns() # fin
             elapsed_time = tf - ti # tiempo de ejecucion
             min_sha3_384[j] = min(min_sha3_384[j],elapsed_time)
             
             # SHA3-512
             m = hashes.sha3_512()
             m.update(vectors[j]) # Vector j
-            ti = process_time_ns() # inicio 
+            ti = timeit.default_timer()#ti = process_time_ns() # inicio 
             m.digest()
-            tf = process_time_ns() # fin
+            tf = timeit.default_timer()#tf = process_time_ns() # fin
             elapsed_time = tf - ti # tiempo de ejecucion
             min_sha3_512[j] = min(min_sha3_512[j],elapsed_time)
 
@@ -107,6 +107,6 @@ plt.plot(n, resultados[3], 'y-', label='SHA3-512')
 
 plt.legend(loc='upper left')
 plt.xlabel('Vectores de prueba')
-plt.ylabel('Minimo de tiempo de ejecuciòn (nanosegundos)')
-plt.title('Tiempo de ejecución de vectores de prueba (N = 100)')
+plt.ylabel('Minimo de tiempo de ejecuciòn (segundos)')
+plt.title('Tiempo de ejecución de vectores de prueba')
 plt.show()

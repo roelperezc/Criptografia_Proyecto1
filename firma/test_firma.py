@@ -5,9 +5,8 @@ Created on Sat Oct 30 13:22:41 2021
 """
 
 import matplotlib.pyplot as plt
-import time
+import timeit
 import re
-from time import process_time_ns
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -31,19 +30,19 @@ def signature(pk_rsa,pk_ecdsa_521,pk_ecdsa_571,line_bytes):
     
     signatures = []    
     
-    ti = time.time()
+    ti = timeit.default_timer()
     rsa_sig = pk_rsa.sign(line_bytes,padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH),hashes.SHA256())
-    tf = time.time()
+    tf = timeit.default_timer()
     rsa_pss = tf - ti
     
-    ti = time.time()
+    ti = timeit.default_timer()
     ecdsa_521_sig = pk_ecdsa_521.sign(line_bytes,ec.ECDSA(hashes.SHA256()))
-    tf = time.time()
+    tf = timeit.default_timer()
     ecdsa_521 = tf - ti
     
-    ti = time.time()
+    ti = timeit.default_timer()
     ecdsa_571_sig = pk_ecdsa_571.sign(line_bytes,ec.ECDSA(hashes.SHA256()))
-    tf = time.time()
+    tf = timeit.default_timer()
     ecdsa_571k = tf - ti
     
     #Firma RSA
@@ -61,23 +60,23 @@ def verification(signatures,publicKeys,line_bytes):
     
     #RSA
     #publicKeys[0] = pbk_rsa ----------------- signatures[0] = rsa_sig
-    ti = time.time()
+    ti = timeit.default_timer()
     publicKeys[0].verify(signatures[0],line_bytes,padding.PSS(mgf=padding.MGF1(hashes.SHA256()),salt_length=padding.PSS.MAX_LENGTH),hashes.SHA256())
-    tf = time.time()
+    tf = timeit.default_timer()
     rsa_ver = tf - ti
     
     #ECDSA 521
     #publicKeys[1] = pbk_ecdsa_521 ----------------- signatures[1] = ecdsa_521_sig
-    ti = time.time()
+    ti = timeit.default_timer()
     publicKeys[1].verify(signatures[1], line_bytes, ec.ECDSA(hashes.SHA256()))
-    tf = time.time()
+    tf = timeit.default_timer()
     ecdsa_521_ver = tf - ti
     
     #ECDSA 571
     #publicKeys[2] = pbk_ecdsa_571 ----------------- signatures[0] = ecdsa_571_sig
-    ti = time.time()
+    ti = timeit.default_timer()
     publicKeys[2].verify(signatures[2], line_bytes, ec.ECDSA(hashes.SHA256()))
-    tf = time.time()
+    tf = timeit.default_timer()
     ecdsa_571_ver = tf - ti
     
     return rsa_ver, ecdsa_521_ver, ecdsa_571_ver
@@ -146,8 +145,8 @@ def main():
     plt.plot(num,sign_times[0],'-b',label='RSA PSS')
     plt.plot(num,sign_times[1],'-g',label='ECDSA 521')
     plt.plot(num,sign_times[2],'-r',label='ECDSA 571K')
-    plt.xlabel('Mensjaes')
-    plt.ylabel('Tiempo')
+    plt.xlabel('Mensajes')
+    plt.ylabel('Tiempo mìnimo (segundos)')
     plt.legend(loc='best')
     plt.title('Firma RSA vs ECDSA 521 vs ECDSA 571')
     plt.show()
@@ -158,8 +157,8 @@ def main():
     plt.plot(num,ver_times[0],'-b',label='RSA PSS')
     plt.plot(num,ver_times[1],'-g',label='ECDSA 521')
     plt.plot(num,ver_times[2],'-r',label='ECDSA 571K')  
-    plt.xlabel('Messages')
-    plt.ylabel('Time')
+    plt.xlabel('Mensajes')
+    plt.ylabel('Tiempo mìnimo (segundos)')
     plt.legend(loc='best')
     plt.title('Verificación de firma RSA vs ECDSA 521 vs ECDSA 571')
     plt.show()
