@@ -141,8 +141,8 @@ def main():
         num.append(x)
         
     #Gráfica de firma
-    fig = plt.figure()
-    fig.add_subplot(941)
+    #fig = plt.figure()
+    #fig.add_subplot(941)
     plt.plot(num,sign_times[0],'-b',label='RSA PSS')
     plt.plot(num,sign_times[1],'-g',label='ECDSA 521')
     plt.plot(num,sign_times[2],'-r',label='ECDSA 571K')
@@ -153,8 +153,8 @@ def main():
     plt.show()
     
     #Gráfica de verificación de firma
-    fig = plt.figure()
-    fig.add_subplot(941)
+    #fig = plt.figure()
+    #fig.add_subplot(941)
     plt.plot(num,ver_times[0],'-b',label='RSA PSS')
     plt.plot(num,ver_times[1],'-g',label='ECDSA 521')
     plt.plot(num,ver_times[2],'-r',label='ECDSA 571K')  
