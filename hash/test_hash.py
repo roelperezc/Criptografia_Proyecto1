@@ -108,5 +108,5 @@ plt.plot(n, resultados[3], 'y-', label='SHA3-512')
 plt.legend(loc='upper left')
 plt.xlabel('Vectores de prueba')
 plt.ylabel('Minimo de tiempo de ejecuciòn (nanosegundos)')
-
+plt.title('Tiempo de ejecución de vectores de prueba (N = 100)')
 plt.show()
