@@ -1,12 +1,31 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Sat Oct 30 13:22:41 2021
+
+"""
 
 import matplotlib.pyplot as plt
 import time
 import re
+from time import process_time_ns
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import padding
+
+test_gen = open("186-4ecdsatestvectors/SigGen.txt","r")
+
+    #Generación de llaves privadas 
+pk_rsa = rsa.generate_private_key(public_exponent=65537,key_size=1024)
+pk_ecdsa_521 = ec.generate_private_key(ec.SECP521R1())
+pk_ecdsa_571 = ec.generate_private_key(ec.SECT571K1())
+    
+    #Generación de llaves públicas
+pbk_rsa = pk_rsa.public_key()
+pbk_ecdsa_521 = pk_ecdsa_521.public_key()
+pbk_ecdsa_571 = pk_ecdsa_571.public_key()
+    
+publicKeys = [pbk_rsa,pbk_ecdsa_521,pbk_ecdsa_571]
 
 def signature(pk_rsa,pk_ecdsa_521,pk_ecdsa_571,line_bytes):
     
@@ -63,9 +82,8 @@ def verification(signatures,publicKeys,line_bytes):
     
     return rsa_ver, ecdsa_521_ver, ecdsa_571_ver
 
-def test(sig_ver,ver_ver):
+def test(line_bytes):
     
-    test_gen = open("186-4ecdsatestvectors/SigGen.txt","r")
 
     rsa_temp = []
     ecdsa521_temp = []
@@ -75,17 +93,33 @@ def test(sig_ver,ver_ver):
     ecdsa_571k_ver = []
     ecdsa_521_ver = []
     
-    #Generación de llaves privadas 
-    pk_rsa = rsa.generate_private_key(public_exponent=65537,key_size=1024)
-    pk_ecdsa_521 = ec.generate_private_key(ec.SECP521R1())
-    pk_ecdsa_571 = ec.generate_private_key(ec.SECT571K1())
+    for line in line_bytes:
+
+            #Firma de mensaje
+        rsa_t,ec521,ec571,signatures=signature(pk_rsa,pk_ecdsa_521,pk_ecdsa_571,line)
+        rsa_temp.append(rsa_t)
+        ecdsa521_temp.append(ec521)
+        ecdsa571_temp.append(ec571)
     
-    #Generación de llaves públicas
-    pbk_rsa = pk_rsa.public_key()
-    pbk_ecdsa_521 = pk_ecdsa_521.public_key()
-    pbk_ecdsa_571 = pk_ecdsa_571.public_key()
+                #Verificación de firma
+        rsa_ver,ec521_ver,ec571_ver=verification(signatures,publicKeys,line)
+        rsa_pss_ver.append(rsa_ver)
+        ecdsa_521_ver.append(ec521_ver)
+        ecdsa_571k_ver.append(ec571_ver)
+            
+
+    return [rsa_temp,ecdsa521_temp,ecdsa571_temp],[rsa_pss_ver,ecdsa_521_ver,ecdsa_571k_ver]
+
+def comparacion(array, compare):
+    for i in range(len(array)):
+        for j in range(len(array[0])):
+            if compare[i][j] < array[i][j]:
+                array[i][j] = compare[i][j]
+    return array
     
-    publicKeys = [pbk_rsa,pbk_ecdsa_521,pbk_ecdsa_571]
+def main():
+    num = []
+    line_bytes = []
     
     for line in test_gen:
         if re.match("^Msg",line):
@@ -93,52 +127,17 @@ def test(sig_ver,ver_ver):
             line = line.replace("Msg = ","")
             line = line.replace("\n","")
             
-            line_bytes = line.encode()
-            
-            #Firma de mensaje
-            rsa_t,ec521,ec571,signatures=signature(pk_rsa,pk_ecdsa_521,pk_ecdsa_571,line_bytes)
-            rsa_temp.append(rsa_t)
-            ecdsa521_temp.append(ec521)
-            ecdsa571_temp.append(ec571)
-
-            #Verificación de firma
-            rsa_ver,ec521_ver,ec571_ver=verification(signatures,publicKeys,line_bytes)
-            rsa_pss_ver.append(rsa_ver)
-            ecdsa_521_ver.append(ec521_ver)
-            ecdsa_571k_ver.append(ec571_ver)
+            line_bytes.append(line.encode())
             
 
-    return [rsa_temp,ecdsa521_temp,ecdsa571_temp],[rsa_pss_ver,ecdsa_521_ver,ecdsa_571k_ver]
-
-
-def average():
-    num = []
-    sig_aux = []
-    ver_aux = []
-    sig_ver = []
-    ver_ver = []
-
-    sign_times,ver_times = test(sig_ver,ver_ver)
+    sign_times,ver_times = test(line_bytes)
     
-
     for i in range(9):
-        sig_aux,ver_aux = test(sig_ver,ver_ver)
-        for a in range(len(sig_aux[0])):
-            sign_times[0][a] += sig_aux[0][a]
-            sign_times[1][a] += sig_aux[1][a]
-            sign_times[2][a] += sig_aux[2][a]
-            ver_times[0][a] += ver_aux[0][a]
-            ver_times[1][a] += ver_aux[1][a]
-            ver_times[2][a] += ver_aux[2][a]
-            
+        sig_aux,ver_aux = test(line_bytes)
+        sign_times = comparacion(sign_times, sig_aux)
+        ver_times = comparacion(ver_times,ver_aux)
 
     for x in range(len(sign_times[0])):
-        sign_times[0][x] = sign_times[0][x]/10
-        sign_times[1][x] = sign_times[1][x]/10
-        sign_times[2][x] = sign_times[2][x]/10
-        ver_times[0][x] = ver_times[0][x]/10
-        ver_times[1][x] = ver_times[1][x]/10
-        ver_times[2][x] = ver_times[2][x]/10
         num.append(x)
         
     #Gráfica de firma
@@ -167,4 +166,4 @@ def average():
 
     return 0
 
-average()
+main()
